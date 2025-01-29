@@ -41,8 +41,6 @@ services:
     container_name: wordpress
     build: ./requirements/wordpress/.
     image: wordpress:42
-    depends_on:
-      - mariadb
     volumes:
       - wordpress:/var/www/html
     env_file:
@@ -50,6 +48,7 @@ services:
     networks:
       - inception
     restart: always
+
   
   mariadb:
     container_name: mariadb
