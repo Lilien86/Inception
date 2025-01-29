@@ -1,15 +1,27 @@
-# Use debian:buster as the base image
+# Use Debian as the base image
 FROM debian:buster
 
-# Update and install MariaDB
-RUN apt-get update -y && apt-get install mariadb-server -y
+# Set maintainer
+LABEL maintainer="your-email@example.com"
 
-# Copy the configuration and the script
-COPY ./tools/50-server.cnf /etc/mysql/mariadb.conf.d/
-COPY ./tools/script.sh /
+# Install necessary dependencies
+RUN apt-get update && apt-get install -y \
+    mariadb-server \
+    mariadb-client \
+    && rm -rf /var/lib/apt/lists/*
 
-# Ensure the script is executable
-RUN chmod +x /script.sh
+# Set environment variables (use .env file to manage these in your project)
+ENV MYSQL_DATABASE=${MYSQL_DATABASE}
+ENV MYSQL_USER=${MYSQL_USER}
+ENV MYSQL_PASSWORD=${MYSQL_PASSWORD}
+ENV MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
 
-# Set the script as the entrypoint
-ENTRYPOINT ["/script.sh"]
+# Copy initialization script for MariaDB
+COPY conf/init.sql /docker-entrypoint-initdb.d/
+COPY conf/my.cnf /etc/mysql/my.cnf
+
+# Expose port 3306
+EXPOSE 3306
+
+# Run MariaDB service
+CMD ["mysqld"]

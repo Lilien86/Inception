@@ -1,11 +1,15 @@
 FROM debian:buster
 
+# Install Nginx
+RUN apt-get update && \
+    apt-get install -y nginx && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN apt -y update && apt install -y nginx && apt install openssl -y
+# Copy the custom Nginx configuration file from the conf folder
+COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 
+# Expose ports for HTTP (80) and HTTPS (443)
+EXPOSE 80 443
 
-COPY ./tools/script.sh /
-
-RUN chmod +x /script.sh
-
-ENTRYPOINT ["/script.sh"]
+# Run Nginx in the foreground
+CMD ["nginx", "-g", "daemon off;"]

@@ -1,76 +1,47 @@
-version: "3.5"
-
-volumes:
-  wordpress:
-    name: wordpress
-    driver: local
-    driver_opts:
-      device: /home/lauger/Desktop/Inception/srcs/requirements/wordpress
-      o: bind
-      type: none
-  mariadb:
-    name: mariadb
-    driver: local
-    driver_opts:
-      device: /home/lauger/Desktop/Inception/srcs/requirements/mariadb
-      o: bind
-      type: none
-
-networks:
-  inception:
-    name: inception
+version: '3.8'
 
 services:
+  mariadb:
+    build: ./requirements/mariadb
+    container_name: mariadb
+    restart: always
+    env_file: .env
+    volumes:
+      - mariadb:/var/lib/mysql
+    networks:
+      - inception
+
+  wordpress:
+    build: ./requirements/wordpress
+    container_name: wordpress
+    restart: always
+    env_file: .env
+    depends_on:
+      - mariadb
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - inception
+
   nginx:
+    build: ./requirements/nginx
     container_name: nginx
-    build: ./requirements/nginx/.
-    image: nginx:42
-    ports:
-      - "443:443"
+    restart: always
     depends_on:
       - wordpress
     volumes:
       - wordpress:/var/www/html
+    ports:
+      - "443:443"
     networks:
       - inception
-    env_file:
-      - .env
-    restart: always
-  
-  wordpress:
-    container_name: wordpress
-    build: ./requirements/wordpress/.
-    image: wordpress:42
-    volumes:
-      - wordpress:/var/www/html
-    env_file:
-      - .env
-    environment:
-      WORDPRESS_DB_NAME: ${DB_NAME}
-      WORDPRESS_DB_USER: ${DB_USER}
-      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
-      WORDPRESS_DB_HOST: mariadb
-    depends_on:
-      - mariadb
-    networks:
-      - inception
-    restart: always
 
-  
+volumes:
   mariadb:
-    container_name: mariadb
-    build: ./requirements/mariadb/.
-    image: mariadb:42
-    volumes:
-      - mariadb:/var/lib/mysql
-    env_file:
-      - .env
-    environment:
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-    networks:
-      - inception
-    restart: always
+    driver: local
+  wordpress:
+    driver: local
 
+networks:
+  inception:
+    driver: bridge
