@@ -1,15 +1,24 @@
-FROM debian:buster
+FROM debian:bullseye
 
-# Install Nginx
-RUN apt-get update && \
-    apt-get install -y nginx && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update
+RUN apt-get install -y nginx
+RUN apt-get install -y openssl
 
-# Copy the custom Nginx configuration file from the conf folder
-COPY ./conf/nginx.conf /etc/nginx/nginx.conf
+RUN mkdir -p /etc/nginx/ssl
 
-# Expose ports for HTTP (80) and HTTPS (443)
-EXPOSE 80 443
+RUN openssl req -x509 -nodes -out /etc/nginx/ssl/inception.crt \
+    -keyout /etc/nginx/ssl/inception.key \
+    -subj "/C=FR/ST=CM/L=Angouleme/O=42/OU=42/CN=lauger.42.fr/UID=lauger"
 
-# Run Nginx in the foreground
-CMD ["nginx", "-g", "daemon off;"]
+RUN mkdir -p /var/run/nginx
+
+COPY conf/nginx.conf /etc/nginx/conf.d
+
+COPY index.html /usr/share/nginx/html/index.html
+
+RUN chmod 755 /var/www/html
+RUN chown -R www-data:www-data /var/www/html
+
+EXPOSE 443
+
+CMD [ "nginx", "-g", "daemon off;" ]
