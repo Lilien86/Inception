@@ -1,18 +1,22 @@
-FROM debian:buster
+FROM debian:bullseye
 
-RUN apt-get update && \
-    apt-get install -y apache2 php libapache2-mod-php php-mysql php-xml php-curl php-mbstring php-zip && \
-    rm -rf /var/lib/apt/lists/*
+# Update & Install Required Packages
+RUN apt update && apt install -y \
+    php php-fpm php-mysql php-json php-curl php-xml php-mbstring php-zip wget tar \
+    && rm -rf /var/lib/apt/lists/*
 
+# Download and Extract WordPress
 RUN wget https://wordpress.org/latest.tar.gz && \
     tar -xvzf latest.tar.gz && \
     mv wordpress /var/www/html && \
     rm latest.tar.gz
 
+# Copy the WordPress Configuration
 COPY ./conf/wp-config.php /var/www/html/wordpress/wp-config.php
 
+# Set Correct Permissions
 RUN chown -R www-data:www-data /var/www/html/wordpress
 
-EXPOSE 80
+EXPOSE 9000
 
-CMD ["apache2ctl", "-D", "FOREGROUND"]
+CMD ["php-fpm", "-F"]

@@ -1,4 +1,3 @@
-# Use Debian as the base image
 FROM debian:buster
 
 # Set maintainer
