@@ -12,7 +12,7 @@ RUN openssl req -x509 -nodes -out /etc/nginx/ssl/inception.crt \
 COPY ./conf/nginx.conf /etc/nginx/conf.d
 # COPY ./conf/index.html /var/www/html/index.html
 
-RUN chmod -R 755 /var/www/html
+RUN chmod -R 777 /var/www/html
 RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 443
