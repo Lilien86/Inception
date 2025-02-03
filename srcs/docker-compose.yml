@@ -28,7 +28,9 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
-      - ../secrets
+      - ../secrets/credentials.txt
+      - ../secrets/db_password.txt
+      - ../secrets/db_root_password.txt
     restart: on-failure
 
   # wordpress:
