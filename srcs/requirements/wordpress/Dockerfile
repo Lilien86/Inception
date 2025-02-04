@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:bullseye
 
 RUN apt-get update && \
     apt-get install -y \
@@ -16,9 +16,9 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /var/www/html && \
-wget https://wordpress.org/latest.tar.gz && \
-tar -xzf latest.tar.gz --strip-components=1 -C /var/www/html && \
-rm latest.tar.gz
+    wget https://wordpress.org/latest.tar.gz && \
+    tar -xzf latest.tar.gz --strip-components=1 -C /var/www/html && \
+    rm latest.tar.gz
 
 COPY conf/wp-config.conf /etc/php/7.4/fpm/pool.d/wp-config.conf
 

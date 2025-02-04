@@ -63,11 +63,11 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ~/data/mariadb
+      device: /home/lauger/data/mariadb
 
   wordpress:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ~/data/wordpress
+      device:  /home/lauger/data/wordpr
