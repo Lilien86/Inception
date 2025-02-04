@@ -12,19 +12,19 @@ until mysqladmin ping --silent; do
 done
 echo "[i] MariaDB is up!"
 
-mysql -u root <<-EOSQL
+mysql -u root -p"${SQL_ROOT_PASSWORD}"<<-EOSQL
     UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE User = 'root';
     DELETE FROM mysql.user WHERE User='';
     DELETE FROM mysql.db WHERE Db='test' OR Db='test_%';
     FLUSH PRIVILEGES;
 EOSQL
 
-mysql -u root <<-EOSQL
+mysql -u root -p"${SQL_ROOT_PASSWORD}"<<-EOSQL
     ALTER USER 'root'@'localhost' IDENTIFIED BY '${SQL_ROOT_PASSWORD}';
     FLUSH PRIVILEGES;
 EOSQL
 
-mysql -u root -p"${SQL_ROOT_PASSWORD}" <<-EOSQL
+mysql -u root -p"${SQL_ROOT_PASSWORD}"<<-EOSQL
     CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;
     CREATE USER IF NOT EXISTS \`${SQL_USER}\`@'%' IDENTIFIED BY '${SQL_PASSWORD}';
     GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO \`${SQL_USER}\`@'%';
