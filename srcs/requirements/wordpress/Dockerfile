@@ -22,6 +22,9 @@ RUN mkdir -p /var/www/html && \
 
 COPY conf/wp-config.conf /etc/php/7.4/fpm/pool.d/wp-config.conf
 
+RUN mkdir -p /home/lauger/data/wordpr
+RUN chmod 777 /home/lauger/data/wordpr
+
 RUN mkdir -p /run/php /var/www/html
 
 COPY tools/setup.sh /usr/local/bin/setup.sh
