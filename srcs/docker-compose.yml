@@ -35,21 +35,23 @@ services:
       - ../secrets/db_root_password.txt
     restart: on-failure
 
-  # wordpress:
-  #   container_name: wordpress
-  #   networks:
-  #     - inception
-  #   volumes:
-  #     - wordpress:/var/www/html
-  #   ports:
-  #     - "9000:9000"
-  #   build:
-  #     context: ./requirements/wordpress
-  #     dockerfile: Dockerfile
-  #   env_file:
-  #     - .env
-  #     - ../secrets
-  #   restart: on-failure
+  wordpress:
+    container_name: wordpress
+    networks:
+      - inception
+    volumes:
+      - wordpress:/var/www/html
+    ports:
+      - "9000:9000"
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+      - ../secrets/credentials.txt
+      - ../secrets/db_password.txt
+      - ../secrets/db_root_password.txt
+    restart: on-failure
 
 networks:
   inception:
@@ -63,9 +65,9 @@ volumes:
       o: bind
       device: ~/data/mariadb
 
-  # wordpress:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     o: bind
-  #     device: ~/data/wordpress
+  wordpress:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ~/data/wordpress

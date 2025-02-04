@@ -1,4 +1,10 @@
-all : up
+all : build up
+
+build :
+	@sudo docker-compose -f ./srcs/docker-compose.yml build
+
+build_c :
+	@sudo docker-compose -f ./srcs/docker-compose.yml build --no-cache
 
 up : 
 	@sudo docker-compose -f ./srcs/docker-compose.yml up -d

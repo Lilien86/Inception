@@ -1,20 +1,19 @@
-FROM	debian:bullseye
+FROM debian:bullseye
 
-RUN		apt-get update
-RUN		apt-get install -y nginx
-RUN		mkdir -p /etc/nginx/ssl
-RUN		apt-get install -y openssl
+RUN apt-get update && apt-get install -y nginx openssl && rm -rf /var/lib/apt/lists/*
 
-RUN openssl req -x509 -nodes -out /etc/nginx/ssl/inception.crt \
+RUN mkdir -p /etc/nginx/ssl
+
+RUN openssl req -x509 -nodes -days 365 \
+    -newkey rsa:2048 \
     -keyout /etc/nginx/ssl/inception.key \
-    -subj "/C=FR/ST=CM/L=Angouleme/O=42/OU=42/CN=lauger.42.fr/UID=lauger"
+    -out /etc/nginx/ssl/inception.crt \
+    -subj "/C=FR/ST=City/L=Angouleme/O=42/OU=42/CN=lauger.42.fr"
 
-COPY ./conf/nginx.conf /etc/nginx/conf.d
-# COPY ./conf/index.html /var/www/html/index.html
+COPY conf/nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN chmod -R 777 /var/www/html
-RUN chown -R www-data:www-data /var/www/html
+# COPY conf/index.html /var/www/html/index.html
 
 EXPOSE 443
 
-CMD [ "nginx", "-g", "daemon off;" ]
+CMD ["nginx", "-g", "daemon off;"]
