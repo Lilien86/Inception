@@ -3,7 +3,7 @@ set -e
 
 # 1) Wait for MariaDB to be ready, using root credentials
 echo "Waiting for MariaDB to be ready..."
-while ! mysqladmin ping -h mariadb -u root -p"$SQL_ROOT_PASSWORD" --silent; do
+while ! mysqladmin ping -h mariadb -u "$SQL_USER" -p"$SQL_PASSWORD" --silent; do
     sleep 1
 done
 echo "MariaDB is ready!"
