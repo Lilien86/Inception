@@ -1,57 +1,36 @@
 #!/bin/bash
+mkdir -p /run/mysqld
+chown -R mysql:mysql /run/mysqld
 
-# 1) Wait for MariaDB to be ready
-echo "Waiting for MariaDB to be ready..."
-while ! mysqladmin ping -h mariadb -u root -p"$SQL_ROOT_PASSWORD" --silent; do
+echo "[i] Starting temporary MariaDB..."
+mysqld_safe --skip-networking &
+until mysqladmin ping --silent; do
+    echo "[i] Waiting for mysqld to be up..."
     sleep 1
 done
-echo "MariaDB is ready!"
+echo "[i] MariaDB is up!"
 
-cd /var/www/html
+# Suppression des utilisateurs anonymes et des bases de test
+mysql -u root -p"${SQL_ROOT_PASSWORD}" <<-EOSQL
+    DELETE FROM mysql.user WHERE User='';
+    DELETE FROM mysql.db WHERE Db='test' OR Db='test_%';
+    FLUSH PRIVILEGES;
+EOSQL
 
-# 2) If wp-config.php doesn't exist, we configure WordPress
-if [ ! -f wp-config.php ]; then
+# Mise à jour du plugin d'authentification pour root
+mysql -u root -p"${SQL_ROOT_PASSWORD}" <<-EOSQL
+    ALTER USER 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('${SQL_ROOT_PASSWORD}');
+    FLUSH PRIVILEGES;
+EOSQL
 
-    # Download WP-CLI if not present
-    if [ ! -f /usr/local/bin/wp ]; then
-        echo "Downloading WP-CLI..."
-        curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-        chmod +x wp-cli.phar
-        mv wp-cli.phar /usr/local/bin/wp
-    fi
+# Création de la base de données et de l'utilisateur avec les droits appropriés
+mysql -u root -p"${SQL_ROOT_PASSWORD}" <<-EOSQL
+    CREATE DATABASE IF NOT EXISTS \`${SQL_DATABASE}\`;
+    CREATE USER IF NOT EXISTS \`${SQL_USER}\`@'%' IDENTIFIED BY '${SQL_PASSWORD}';
+    GRANT ALL PRIVILEGES ON \`${SQL_DATABASE}\`.* TO \`${SQL_USER}\`@'%';
+    FLUSH PRIVILEGES;
+EOSQL
 
-    echo "Creating wp-config..."
-    wp config create \
-        --dbname=$SQL_DATABASE \
-        --dbuser=$SQL_USER \
-        --dbpass=$SQL_PASSWORD \
-        --dbhost=mariadb \
-        --path=/var/www/html \
-        --allow-root
-
-    echo "Installing WordPress..."
-    wp core install \
-        --url=$FULL_URL \
-        --title="$WP_TITLE" \
-        --admin_user=$WP_ADMIN_NAME \
-        --admin_password=$WP_ADMIN_PASSWORD \
-        --admin_email=$WP_ADMIN_EMAIL \
-        --path=/var/www/html \
-        --skip-email \
-        --allow-root
-
-    echo "Creating a standard user..."
-    wp user create \
-        $WP_USER_NAME $WP_USER_EMAIL \
-        --user_pass=$WP_USER_PASSWORD \
-        --role=author \
-        --path=/var/www/html \
-        --allow-root
-fi
-
-# 3) Always ensure correct permissions (if needed)
-chown -R www-data:www-data /var/www/html
-
-# 4) Launch PHP-FPM in the foreground
-echo "Starting php-fpm..."
-exec php-fpm7.4 -F
+# Arrêt de l'instance temporaire et lancement en mode normal
+mysqladmin -u root -p"${SQL_ROOT_PASSWORD}" shutdown
+exec mysqld

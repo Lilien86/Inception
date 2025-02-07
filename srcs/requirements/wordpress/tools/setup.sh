@@ -13,7 +13,7 @@ cd /var/www/html
 # 2) If wp-config.php doesn't exist, configure WordPress
 if [ ! -f wp-config.php ]; then
 
-    # Download WP-CLI if not present
+    # Always ensure WP-CLI is installed
     if [ ! -f /usr/local/bin/wp ]; then
         echo "Downloading WP-CLI..."
         curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar

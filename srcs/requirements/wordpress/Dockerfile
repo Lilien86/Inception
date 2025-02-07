@@ -2,6 +2,8 @@ FROM debian:bullseye
 
 RUN apt-get update && \
     apt-get install -y \
+    iproute2 \
+    iptables \
     wget \
     curl \
     mariadb-client \
@@ -22,10 +24,19 @@ RUN mkdir -p /var/www/html && \
 
 COPY conf/wp-config.conf /etc/php/7.4/fpm/pool.d/wp-config.conf
 
-RUN mkdir -p /home/lauger/data/wordpr
-RUN chmod 777 /home/lauger/data/wordpr
+# Modify PHP-FPM to listen on TCP port instead of Unix socket
+RUN sed -i 's|listen = /run/php/php7.4-fpm.sock|listen = 9000|' /etc/php/7.4/fpm/pool.d/www.conf
 
-RUN mkdir -p /run/php /var/www/html
+# Ensure the PHP-FPM run directory exists
+RUN mkdir -p /run/php
+
+# Set correct permissions for the WordPress directory
+RUN chown -R www-data:www-data /var/www/html
+
+# Install WP-CLI
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+    chmod +x wp-cli.phar && \
+    mv wp-cli.phar /usr/local/bin/wp
 
 COPY tools/setup.sh /usr/local/bin/setup.sh
 RUN chmod +x /usr/local/bin/setup.sh
@@ -34,4 +45,4 @@ WORKDIR /var/www/html
 
 EXPOSE 9000
 
-ENTRYPOINT ["/usr/local/bin/setup.sh"]
+CMD ["/usr/local/bin/setup.sh"]
