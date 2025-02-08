@@ -13,8 +13,6 @@ RUN openssl req -x509 -nodes -days 365 \
 
 COPY conf/nginx.conf /etc/nginx/conf.d/default.conf
 
-# COPY conf/index.html /var/www/html/index.html
-
 EXPOSE 443
 
 CMD ["nginx", "-g", "daemon off;"]
